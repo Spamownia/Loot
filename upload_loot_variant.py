@@ -1,12 +1,10 @@
 # upload_loot_variant.py
-# Autor: GPT-5
-# Działanie: losowo wybiera wariant pliku lootów i wysyła go na serwer SCUM przez FTP.
-# Uruchomienie np. przez cron lub web service Rendera.
-
+# Wersja: z powiadomieniem na Discord
 import ftplib
 import random
 import os
 import sys
+import requests
 
 # ------- USTAWIENIA -------
 FTP_HOST = "195.179.226.218"
@@ -21,13 +19,14 @@ VARIANTS = [
     "GeneralZoneModifiers_2.json",
     "GeneralZoneModifiers_3.json"
 ]
-# ---------------------------
 
+# Webhook Discord
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1438609916238762054/FYjetBfGOUQgK4i9VIGhXVUjTbO_KxY1NYHcUsHv6Cpqcrj0hEaQllaqysQYVlydGDjl"
+# ---------------------------
 
 def choose_variant():
     """Losowo wybiera plik wariantu."""
     return random.choice(VARIANTS)
-
 
 def upload(local_file, remote_path):
     """Łączy się przez FTP, wysyła plik i podmienia GeneralZoneModifiers.json."""
@@ -55,6 +54,28 @@ def upload(local_file, remote_path):
         print("❌ Błąd FTP:", e)
         sys.exit(1)
 
+def send_discord_notification(chosen_file):
+    """Wysyła informację o aktywnej strefie na Discorda."""
+    # Wyciągamy nazwę strefy z pliku JSON
+    import json
+    try:
+        with open(chosen_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        zones = data.get("Zones", [])
+        zone_names = [z.get("Name", "Unknown") for z in zones]
+        content = f"🎲 **Aktywna strefa loot-u:** {', '.join(zone_names)}"
+    except Exception as e:
+        content = f"❌ Nie udało się odczytać nazwy strefy: {e}"
+
+    # Wyślij na Discord
+    try:
+        r = requests.post(DISCORD_WEBHOOK, json={"content": content})
+        if r.status_code == 204 or r.status_code == 200:
+            print(f"✅ Wysłano powiadomienie Discord: {content}")
+        else:
+            print(f"❌ Błąd wysyłki Discord: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"❌ Błąd połączenia z Discord: {e}")
 
 if __name__ == "__main__":
     chosen = choose_variant()
@@ -64,4 +85,5 @@ if __name__ == "__main__":
 
     print("🎲 Wybrano wariant:", chosen)
     upload(chosen, REMOTE_DIR)
-    print("ℹ️  Upload zakończony. Teraz wykonaj restart serwera z panelu G-Portal.")
+    send_discord_notification(chosen)
+    print("ℹ️ Upload zakończony. Teraz wykonaj restart serwera z panelu G-Portal.")
