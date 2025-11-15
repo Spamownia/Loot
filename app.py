@@ -7,6 +7,7 @@ import ftplib
 import json
 import requests
 from flask import Flask, jsonify
+from datetime import datetime
 
 # ---------------- CONFIG ----------------
 FTP_HOST = "195.179.226.218"
@@ -15,7 +16,6 @@ FTP_USER = "gpftp37275281717442833"
 FTP_PASS = "LXNdGShY"
 REMOTE_DIR = "/SCUM/Saved/Config/WindowsServer/Loot"
 
-# 91 wariantów
 VARIANTS = [f"GeneralZoneModifiers_{i}.json" for i in range(1, 92)]
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1439377206999646208/0WUe3Vl_75zTQtzBCSvC9uDXJdylvEt9VKB0Bes6NviupWMqzcZElGXiMsbg2N6rL5iU"
@@ -30,7 +30,6 @@ _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
 _lock = threading.Lock()
-_next_run_time = None
 
 
 def choose_variant():
@@ -60,7 +59,6 @@ def upload_to_ftp(local_file: str) -> bool:
 
 
 def send_discord_notification(chosen_file: str):
-    global _next_run_time
     print("[Discord] Preparing notification...")
     try:
         with open(chosen_file, "r", encoding="utf-8") as f:
@@ -84,14 +82,6 @@ def send_discord_notification(chosen_file: str):
     timestamp = int(time.time())
     content += f"\n⏱ Last draw: <t:{timestamp}:R>"
 
-    # Odliczanie do następnego losowania
-    if _next_run_time:
-        remaining = int(_next_run_time - time.time())
-        if remaining > 0:
-            hours, rem = divmod(remaining, 3600)
-            minutes, seconds = divmod(rem, 60)
-            content += f"\n⏱ Next draw in: {hours:02}:{minutes:02}:{seconds:02}"
-
     try:
         print("[Discord] Sending message:", content)
         r = requests.post(DISCORD_WEBHOOK, json={"content": content}, timeout=15)
@@ -105,7 +95,7 @@ def send_discord_notification(chosen_file: str):
 
 
 def run_cycle():
-    global _last_chosen, _next_run_time
+    global _last_chosen
     with _lock:
         chosen = choose_variant()
         if _last_chosen is not None and len(VARIANTS) > 1:
@@ -114,7 +104,6 @@ def run_cycle():
                 chosen = choose_variant()
                 attempts += 1
         _last_chosen = chosen
-        _next_run_time = time.time() + INTERVAL_SECONDS
 
     if not os.path.isfile(chosen):
         print(f"[Cycle] ERROR: local variant file not found: {chosen}")
