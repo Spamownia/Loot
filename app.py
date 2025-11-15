@@ -23,7 +23,7 @@ VARIANTS = [
     "GeneralZoneModifiers_4.json"
 ]
 
-DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1438609916238762054/FYjetBfGOUQgK4i9VIGhXVUjTbO_KxY1NYHcUsHv6Cpqcrj0hEaQllaqysQYVlydGDjl"
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1439377206999646208/0WUe3Vl_75zTQtzBCSvC9uDXJdylvEt9VKB0Bes6NviupWMqzcZElGXiMsbg2N6rL5iU"
 
 INTERVAL_SECONDS = 4 * 3600
 TMP_REMOTE_NAME = "._tmp_upload.json"
