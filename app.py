@@ -67,10 +67,16 @@ def send_discord_notification(chosen_file: str):
     try:
         with open(chosen_file, "r", encoding="utf-8") as f:
             data = json.load(f)
-        zones = data.get("Zones")
-        if zones:
-            zone_names = [z.get("Name", "Unknown") for z in zones]
-            content = f"🎲 **Aktywna strefa loot-u:** {', '.join(zone_names)}"
+        modifiers = data.get("Modifiers", [])
+        zone_names = []
+        for mod in modifiers:
+            zones = mod.get("Zones", [])
+            for z in zones:
+                name = z.get("Name")
+                if name:
+                    zone_names.append(name)
+        if zone_names:
+            content = f"🎲 **Aktywne strefy loot-u:** {', '.join(zone_names)}"
         else:
             content = f"🎲 **Wariant loot-u wybrany:** {chosen_file}"
     except Exception as e:
