@@ -33,6 +33,7 @@ app = Flask(__name__)
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
+_last_run_timestamp = 0  # nowy zmienna do śledzenia czasu ostatniego losowania
 _lock = threading.Lock()
 
 
@@ -95,7 +96,7 @@ def send_discord_notification(chosen_file: str):
 
 
 def run_cycle():
-    global _last_chosen
+    global _last_chosen, _last_run_timestamp
     with _lock:
         chosen = choose_variant()
         if _last_chosen is not None and len(VARIANTS) > 1:
@@ -113,6 +114,7 @@ def run_cycle():
     ok = upload_to_ftp(chosen)
     if ok:
         send_discord_notification(chosen)
+        _last_run_timestamp = time.time()  # aktualizacja czasu ostatniego losowania
         print(f"[Cycle] Completed successfully for variant: {chosen}")
         return {"ok": True, "file": chosen}
     else:
@@ -168,6 +170,20 @@ def status():
         "service": "loot-automation",
         "interval_hours": INTERVAL_SECONDS // 3600,
         "variants_available": [f for f in VARIANTS if os.path.isfile(f)]
+    }), 200
+
+
+@app.route("/time-since-last", methods=["GET"])
+def time_since_last():
+    """Zwraca czas w formacie hh:mm:ss od ostatniego losowania"""
+    if _last_run_timestamp == 0:
+        return jsonify({"time_since_last": None, "message": "Nie wykonano jeszcze losowania"}), 200
+    elapsed = int(time.time() - _last_run_timestamp)
+    hours = elapsed // 3600
+    minutes = (elapsed % 3600) // 60
+    seconds = elapsed % 60
+    return jsonify({
+        "time_since_last": f"{hours:02d}:{minutes:02d}:{seconds:02d}"
     }), 200
 
 
