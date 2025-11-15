@@ -35,8 +35,10 @@ _worker_stop = threading.Event()
 _last_chosen = None
 _lock = threading.Lock()
 
+
 def choose_variant():
     return random.choice(VARIANTS)
+
 
 def upload_to_ftp(local_file: str) -> bool:
     try:
@@ -58,6 +60,7 @@ def upload_to_ftp(local_file: str) -> bool:
     except Exception as e:
         print("[FTP] Error during FTP upload:", e)
         return False
+
 
 def send_discord_notification(chosen_file: str):
     print("[Discord] Preparing notification...")
@@ -84,6 +87,7 @@ def send_discord_notification(chosen_file: str):
     except Exception as e:
         print("[Discord] Error while sending webhook:", e)
 
+
 def run_cycle():
     global _last_chosen
     with _lock:
@@ -109,6 +113,7 @@ def run_cycle():
         print(f"[Cycle] Upload failed for variant: {chosen}")
         return {"ok": False, "file": chosen}
 
+
 def background_worker():
     print("[Worker] Background worker started. First run will execute immediately.")
     while not _worker_stop.is_set():
@@ -122,9 +127,21 @@ def background_worker():
             slept += 1
     print("[Worker] Background worker stopped.")
 
+
+@app.before_first_request
+def start_background_thread():
+    global _worker_thread
+    if _worker_thread is None or not _worker_thread.is_alive():
+        _worker_stop.clear()
+        _worker_thread = threading.Thread(target=background_worker, daemon=True)
+        _worker_thread.start()
+        print("[Main] Background worker thread started.")
+
+
 @app.route("/", methods=["GET"])
 def index():
     return "Loot automation: running", 200
+
 
 @app.route("/run-now", methods=["POST", "GET"])
 def run_now():
@@ -138,6 +155,7 @@ def run_now():
     threading.Thread(target=_runner, daemon=True).start()
     return jsonify({"ok": True, "message": "Cycle started in background"}), 202
 
+
 @app.route("/status", methods=["GET"])
 def status():
     return jsonify({
@@ -146,21 +164,14 @@ def status():
         "variants_available": [f for f in VARIANTS if os.path.isfile(f)]
     }), 200
 
-def start_background_thread():
-    global _worker_thread
-    if _worker_thread is None or not _worker_thread.is_alive():
-        _worker_stop.clear()
-        _worker_thread = threading.Thread(target=background_worker, daemon=True)
-        _worker_thread.start()
-        print("[Main] Background worker thread started.")
 
 def stop_background_thread():
     _worker_stop.set()
     if _worker_thread is not None:
         _worker_thread.join(timeout=5)
 
+
 if __name__ == "__main__":
-    start_background_thread()
     port = int(os.environ.get("PORT", 10000))
     print(f"[Main] Starting Flask on 0.0.0.0:{port}")
     app.run(host="0.0.0.0", port=port)
