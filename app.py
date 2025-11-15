@@ -77,7 +77,7 @@ def send_discord_notification(chosen_file: str):
                 if name:
                     zone_names.append(name)
         if zone_names:
-            content = f"🎲 **Aktywne strefy loot-u:** {', '.join(zone_names)}"
+            content = f"🎲 **Active Double Loot Zones:** {', '.join(zone_names)}"
         else:
             content = f"🎲 **Wariant loot-u wybrany:** {chosen_file}"
     except Exception as e:
@@ -85,7 +85,7 @@ def send_discord_notification(chosen_file: str):
 
     # Dodanie Discord Timestamp
     timestamp = int(time.time())
-    content += f"\n⏱ Ostatnie losowanie: <t:{timestamp}:R>"
+    content += f"\n⏱ Last zone draw: <t:{timestamp}:R>"
 
     try:
         print("[Discord] Sending message:", content)
