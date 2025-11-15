@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# app.py -- single-file web service + background loop (4h) for uploading loot variants to FTP and notifying Discord
-
 import os
 import threading
 import time
@@ -26,22 +24,19 @@ VARIANTS = [
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1438609916238762054/FYjetBfGOUQgK4i9VIGhXVUjTbO_KxY1NYHcUsHv6Cpqcrj0hEaQllaqysQYVlydGDjl"
 
-INTERVAL_SECONDS = 4 * 3600  # 4 hours
+INTERVAL_SECONDS = 4 * 3600
 TMP_REMOTE_NAME = "._tmp_upload.json"
 TARGET_REMOTE_NAME = "GeneralZoneModifiers.json"
 # ----------------------------------------
 
 app = Flask(__name__)
-
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
 _lock = threading.Lock()
 
-
 def choose_variant():
     return random.choice(VARIANTS)
-
 
 def upload_to_ftp(local_file: str) -> bool:
     try:
@@ -64,9 +59,8 @@ def upload_to_ftp(local_file: str) -> bool:
         print("[FTP] Error during FTP upload:", e)
         return False
 
-
 def send_discord_notification(chosen_file: str):
-    """Send Discord notification even if Zones are missing."""
+    print("[Discord] Preparing notification...")
     try:
         with open(chosen_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -80,14 +74,15 @@ def send_discord_notification(chosen_file: str):
         content = f"🎲 **Wariant loot-u wybrany (błąd odczytu JSON):** {chosen_file} ({e})"
 
     try:
+        print("[Discord] Sending message:", content)
         r = requests.post(DISCORD_WEBHOOK, json={"content": content}, timeout=15)
+        print(f"[Discord] Response: {r.status_code} {r.text}")
         if r.status_code in (200, 204):
-            print("[Discord] Notification sent:", content)
+            print("[Discord] Notification sent successfully.")
         else:
             print(f"[Discord] Unexpected status {r.status_code}: {r.text}")
     except Exception as e:
         print("[Discord] Error while sending webhook:", e)
-
 
 def run_cycle():
     global _last_chosen
@@ -114,7 +109,6 @@ def run_cycle():
         print(f"[Cycle] Upload failed for variant: {chosen}")
         return {"ok": False, "file": chosen}
 
-
 def background_worker():
     print("[Worker] Background worker started. First run will execute immediately.")
     while not _worker_stop.is_set():
@@ -128,11 +122,9 @@ def background_worker():
             slept += 1
     print("[Worker] Background worker stopped.")
 
-
 @app.route("/", methods=["GET"])
 def index():
     return "Loot automation: running", 200
-
 
 @app.route("/run-now", methods=["POST", "GET"])
 def run_now():
@@ -143,10 +135,8 @@ def run_now():
             print("[RunNow] Manual trigger finished.")
         except Exception as e:
             print("[RunNow] Exception:", e)
-
     threading.Thread(target=_runner, daemon=True).start()
     return jsonify({"ok": True, "message": "Cycle started in background"}), 202
-
 
 @app.route("/status", methods=["GET"])
 def status():
@@ -156,7 +146,6 @@ def status():
         "variants_available": [f for f in VARIANTS if os.path.isfile(f)]
     }), 200
 
-
 def start_background_thread():
     global _worker_thread
     if _worker_thread is None or not _worker_thread.is_alive():
@@ -165,12 +154,10 @@ def start_background_thread():
         _worker_thread.start()
         print("[Main] Background worker thread started.")
 
-
 def stop_background_thread():
     _worker_stop.set()
     if _worker_thread is not None:
         _worker_thread.join(timeout=5)
-
 
 if __name__ == "__main__":
     start_background_thread()
