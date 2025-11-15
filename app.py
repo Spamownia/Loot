@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# app.py -- single-file web service + background loop (4h) for uploading loot variants to FTP and notifying Discord + keep-alive
+# app.py -- single-file web service + background loop (4h) for uploading loot variants to FTP and notifying Discord
+# with enhanced error handling
 
 import os
 import threading
@@ -25,15 +26,14 @@ VARIANTS = [
 ]
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1438609916238762054/FYjetBfGOUQgK4i9VIGhXVUjTbO_KxY1NYHcUsHv6Cpqcrj0hEaQllaqysQYVlydGDjl"
-INTERVAL_SECONDS = 4 * 3600  # 4 hours
 
+INTERVAL_SECONDS = 4 * 3600  # 4h
 TMP_REMOTE_NAME = "._tmp_upload.json"
 TARGET_REMOTE_NAME = "GeneralZoneModifiers.json"
-
-KEEP_ALIVE_INTERVAL = 15 * 60  # 15 minut dla pingowania samego siebie
 # ----------------------------------------
 
 app = Flask(__name__)
+
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
@@ -50,18 +50,26 @@ def upload_to_ftp(local_file: str) -> bool:
         with ftplib.FTP() as ftp:
             ftp.connect(FTP_HOST, FTP_PORT, timeout=20)
             ftp.login(FTP_USER, FTP_PASS)
-            ftp.cwd(REMOTE_DIR)
-            with open(local_file, "rb") as f:
-                ftp.storbinary(f"STOR {TMP_REMOTE_NAME}", f)
             try:
-                ftp.delete(TARGET_REMOTE_NAME)
-            except Exception:
-                pass
-            ftp.rename(TMP_REMOTE_NAME, TARGET_REMOTE_NAME)
-            print("[FTP] Upload and rename successful.")
-        return True
+                ftp.cwd(REMOTE_DIR)
+            except Exception as e:
+                print(f"[FTP] ERROR: cannot cwd to {REMOTE_DIR}: {e}")
+                return False
+            try:
+                with open(local_file, "rb") as f:
+                    ftp.storbinary(f"STOR {TMP_REMOTE_NAME}", f)
+                try:
+                    ftp.delete(TARGET_REMOTE_NAME)
+                except Exception:
+                    pass
+                ftp.rename(TMP_REMOTE_NAME, TARGET_REMOTE_NAME)
+                print(f"[FTP] Upload successful: {local_file} -> {TARGET_REMOTE_NAME}")
+                return True
+            except Exception as e:
+                print(f"[FTP] ERROR uploading file {local_file}: {e}")
+                return False
     except Exception as e:
-        print("[FTP] Error during FTP upload:", e)
+        print(f"[FTP] Connection/login failed: {e}")
         return False
 
 
@@ -71,74 +79,59 @@ def send_discord_notification(chosen_file: str):
             data = json.load(f)
         zones = data.get("Zones", [])
         zone_names = [z.get("Name", "Unknown") for z in zones]
-        content = f"🎲 **Aktywna strefa loot-u:** {', '.join(zone_names)}"
+        content = f"🎲 **Active loot zones:** {', '.join(zone_names)}"
     except Exception as e:
-        content = f"❌ Nie udało się odczytać nazwy strefy z {chosen_file}: {e}"
+        content = f"❌ Failed to read zones from {chosen_file}: {e}"
 
     try:
         r = requests.post(DISCORD_WEBHOOK, json={"content": content}, timeout=15)
         if r.status_code in (200, 204):
-            print("[Discord] Notification sent:", content)
+            print(f"[Discord] Notification sent: {content}")
         else:
-            print(f"[Discord] Unexpected status {r.status_code}: {r.text}")
-    except Exception as e:
-        print("[Discord] Error while sending webhook:", e)
+            print(f"[Discord] ERROR {r.status_code}: {r.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"[Discord] Connection error: {e}")
 
 
 def run_cycle():
     global _last_chosen
     with _lock:
         chosen = choose_variant()
-        if _last_chosen is not None and len(VARIANTS) > 1:
+        if _last_chosen and len(VARIANTS) > 1:
             attempts = 0
             while chosen == _last_chosen and attempts < 5:
                 chosen = choose_variant()
                 attempts += 1
         _last_chosen = chosen
 
-    if not os.path.isfile(chosen):
-        print(f"[Cycle] ERROR: local variant file not found: {chosen}")
+    chosen_path = os.path.join(os.getcwd(), chosen)
+    if not os.path.isfile(chosen_path):
+        print(f"[Cycle] ERROR: local variant file missing: {chosen_path}")
         return {"ok": False, "file": chosen}
 
-    print(f"[Cycle] Selected variant: {chosen}")
-    ok = upload_to_ftp(chosen)
-    if ok:
-        send_discord_notification(chosen)
-        print(f"[Cycle] Completed successfully for variant: {chosen}")
+    print(f"[Cycle] Selected variant: {chosen_path}")
+    if upload_to_ftp(chosen_path):
+        send_discord_notification(chosen_path)
+        print(f"[Cycle] Completed successfully for: {chosen_path}")
         return {"ok": True, "file": chosen}
     else:
-        print(f"[Cycle] Upload failed for variant: {chosen}")
+        print(f"[Cycle] Upload failed for: {chosen_path}")
         return {"ok": False, "file": chosen}
 
 
 def background_worker():
-    print("[Worker] Background worker started. First run will execute immediately.")
+    print("[Worker] Background worker started.")
     while not _worker_stop.is_set():
         try:
             run_cycle()
         except Exception as e:
-            print("[Worker] Exception in run_cycle:", e)
+            print(f"[Worker] Exception in run_cycle: {e}")
 
         slept = 0
         while slept < INTERVAL_SECONDS and not _worker_stop.is_set():
             time.sleep(1)
             slept += 1
     print("[Worker] Background worker stopped.")
-
-
-def keep_alive_worker():
-    """Ping same service to keep Render from idling."""
-    while not _worker_stop.is_set():
-        try:
-            url = os.environ.get("RENDER_EXTERNAL_URL") or f"http://localhost:{os.environ.get('PORT', '10000')}"
-            requests.get(url, timeout=10)
-            print(f"[KeepAlive] Pinged self at {url}")
-        except Exception as e:
-            print("[KeepAlive] Ping failed:", e)
-        slept = 0
-        while slept < KEEP_ALIVE_INTERVAL and not _worker_stop.is_set():
-            time.sleep(1)
-            slept += 1
 
 
 @app.route("/", methods=["GET"])
@@ -148,7 +141,15 @@ def index():
 
 @app.route("/run-now", methods=["POST", "GET"])
 def run_now():
-    threading.Thread(target=run_cycle, daemon=True).start()
+    def _runner():
+        try:
+            print("[RunNow] Manual trigger started.")
+            run_cycle()
+            print("[RunNow] Manual trigger finished.")
+        except Exception as e:
+            print(f"[RunNow] Exception: {e}")
+
+    threading.Thread(target=_runner, daemon=True).start()
     return jsonify({"ok": True, "message": "Cycle started in background"}), 202
 
 
@@ -157,28 +158,23 @@ def status():
     return jsonify({
         "service": "loot-automation",
         "interval_hours": INTERVAL_SECONDS // 3600,
-        "variants_available": [f for f in VARIANTS if os.path.isfile(f)]
+        "variants_available": [f for f in VARIANTS if os.path.isfile(os.path.join(os.getcwd(), f))]
     }), 200
 
 
-def start_threads():
+def start_background_thread():
     global _worker_thread
     if _worker_thread is None or not _worker_thread.is_alive():
         _worker_stop.clear()
         _worker_thread = threading.Thread(target=background_worker, daemon=True)
         _worker_thread.start()
-        threading.Thread(target=keep_alive_worker, daemon=True).start()
-        print("[Main] Background worker and keep-alive threads started.")
-
-
-def stop_threads():
-    _worker_stop.set()
-    if _worker_thread is not None:
-        _worker_thread.join(timeout=5)
+        print("[Main] Background worker thread started.")
 
 
 if __name__ == "__main__":
-    start_threads()
+    print("[Main] Running initial cycle before Flask + background threads")
+    run_cycle()  # immediate first run
+    start_background_thread()
     port = int(os.environ.get("PORT", 10000))
     print(f"[Main] Starting Flask on 0.0.0.0:{port}")
     app.run(host="0.0.0.0", port=port)
