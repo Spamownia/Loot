@@ -105,7 +105,7 @@ def run_cycle():
                 chosen = choose_variant()
                 attempts += 1
         _last_chosen = chosen
-        _last_run_timestamp = time.time()  # aktualizacja czasu ostatniego losowania
+        _last_run_timestamp = time.time()
 
     if not os.path.isfile(chosen):
         print(f"[Cycle] ERROR: local variant file not found: {chosen}")
@@ -137,16 +137,23 @@ def background_worker():
 
 
 def clock_worker():
-    """Wypisuje w konsoli czas od ostatniego losowania co sekundę."""
+    """Zegar w jednej linii — nadpisuje poprzedni tekst."""
+    last_text_length = 0
     while not _worker_stop.is_set():
         if _last_run_timestamp == 0:
-            print("[Clock] Nie wykonano jeszcze losowania", end="\r")
+            msg = "[Clock] Oczekiwanie na pierwsze losowanie..."
         else:
             elapsed = int(time.time() - _last_run_timestamp)
-            hours = elapsed // 3600
-            minutes = (elapsed % 3600) // 60
-            seconds = elapsed % 60
-            print(f"[Clock] Czas od ostatniego losowania: {hours:02d}:{minutes:02d}:{seconds:02d}", end="\r")
+            h = elapsed // 3600
+            m = (elapsed % 3600) // 60
+            s = elapsed % 60
+            msg = f"[Clock] Czas od ostatniego losowania: {h:02d}:{m:02d}:{s:02d}"
+
+        # wyczyść starą linię + wypisz nową
+        clear = " " * max(last_text_length - len(msg), 0)
+        print("\r" + msg + clear, end="")
+
+        last_text_length = len(msg)
         time.sleep(1)
 
 
