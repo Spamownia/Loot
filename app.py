@@ -36,6 +36,9 @@ _last_chosen = None
 _last_run_timestamp = 0
 _lock = threading.Lock()
 
+# tekst zegara
+_clock_text = "Clock not started yet"
+
 
 def choose_variant():
     return random.choice(VARIANTS)
@@ -87,10 +90,6 @@ def send_discord_notification(chosen_file: str):
         print("[Discord] Sending message:", content)
         r = requests.post(DISCORD_WEBHOOK, json={"content": content}, timeout=15)
         print(f"[Discord] Response: {r.status_code} {r.text}")
-        if r.status_code in (200, 204):
-            print("[Discord] Notification sent successfully.")
-        else:
-            print(f"[Discord] Unexpected status {r.status_code}: {r.text}")
     except Exception as e:
         print("[Discord] Error while sending webhook:", e)
 
@@ -108,52 +107,49 @@ def run_cycle():
         _last_run_timestamp = time.time()
 
     if not os.path.isfile(chosen):
-        print(f"[Cycle] ERROR: local variant file not found: {chosen}")
-        return {"ok": False, "reason": "missing_variant", "file": chosen}
+        print(f"[Cycle] ERROR: local variant not found: {chosen}")
+        return {"ok": False, "file": chosen}
 
     print(f"[Cycle] Selected variant: {chosen}")
     ok = upload_to_ftp(chosen)
     if ok:
         send_discord_notification(chosen)
-        print(f"[Cycle] Completed successfully for variant: {chosen}")
+        print(f"[Cycle] Completed successfully")
         return {"ok": True, "file": chosen}
     else:
-        print(f"[Cycle] Upload failed for variant: {chosen}")
+        print(f"[Cycle] Upload failed")
         return {"ok": False, "file": chosen}
 
 
 def background_worker():
-    print("[Worker] Background worker started. First run will execute immediately.")
+    print("[Worker] Background worker started. First run executes now.")
     while not _worker_stop.is_set():
         try:
             run_cycle()
         except Exception as e:
             print("[Worker] Exception in run_cycle:", e)
+
         slept = 0
         while slept < INTERVAL_SECONDS and not _worker_stop.is_set():
             time.sleep(1)
             slept += 1
+
     print("[Worker] Background worker stopped.")
 
 
 def clock_worker():
-    """Zegar w jednej linii — nadpisuje poprzedni tekst."""
-    last_text_length = 0
+    """Aktualizuje _clock_text co sekundę BEZ generowania logów."""
+    global _clock_text
+
     while not _worker_stop.is_set():
         if _last_run_timestamp == 0:
-            msg = "[Clock] Oczekiwanie na pierwsze losowanie..."
+            _clock_text = "Czekam na pierwsze losowanie..."
         else:
             elapsed = int(time.time() - _last_run_timestamp)
             h = elapsed // 3600
             m = (elapsed % 3600) // 60
             s = elapsed % 60
-            msg = f"[Clock] Czas od ostatniego losowania: {h:02d}:{m:02d}:{s:02d}"
-
-        # wyczyść starą linię + wypisz nową
-        clear = " " * max(last_text_length - len(msg), 0)
-        print("\r" + msg + clear, end="")
-
-        last_text_length = len(msg)
+            _clock_text = f"Czas od ostatniego losowania: {h:02d}:{m:02d}:{s:02d}"
         time.sleep(1)
 
 
@@ -188,7 +184,7 @@ def run_now():
         except Exception as e:
             print("[RunNow] Exception:", e)
     threading.Thread(target=_runner, daemon=True).start()
-    return jsonify({"ok": True, "message": "Cycle started in background"}), 202
+    return jsonify({"ok": True}), 202
 
 
 @app.route("/status", methods=["GET"])
@@ -200,13 +196,18 @@ def status():
     }), 200
 
 
+@app.route("/clock", methods=["GET"])
+def clock_status():
+    return _clock_text, 200
+
+
 def stop_background_thread():
     _worker_stop.set()
     if _worker_thread is not None:
         _worker_thread.join(timeout=5)
 
 
-# --- Start background threads ---
+# --- Start threads ---
 start_background_thread()
 start_clock_thread()
 
