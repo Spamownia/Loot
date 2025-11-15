@@ -24,8 +24,8 @@ VARIANTS = [
     "GeneralZoneModifiers_4.json"
 ]
 
-DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")  # token bota
-CHANNEL_ID = int(os.environ.get("DISCORD_CHANNEL", 0))  # kanał do wysyłki
+DISCORD_TOKEN = os.environ.get("MTM4MjI3MjU1NzMxODkzNDY1MA.GYb1z1.WdMVYfyWB-916mcPQZwatS83ai3FVkZuxbdOqc")  # token bota
+CHANNEL_ID = int(os.environ.get("1438609894495354921", 0))  # kanał do wysyłki
 
 INTERVAL_SECONDS = 4 * 3600
 TMP_REMOTE_NAME = "._tmp_upload.json"
