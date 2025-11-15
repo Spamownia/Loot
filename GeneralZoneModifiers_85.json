@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "AirportB2",
+          "TopLeft": "X=-195011.109 Y=6777.690",
+          "BottomRight": "X=-343177.750 Y=-60955.617"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "MilitaryBaseA4",
+          "TopLeft": "X=534533.250 Y=-501222.219",
+          "BottomRight": "X=455511.125 Y=-578833.375"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}

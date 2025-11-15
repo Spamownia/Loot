@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "Chernobyl",
+          "TopLeft": "X=-676200.000 Y=245255.500",
+          "BottomRight": "X=-903388.938 Y=46288.938"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "MilitaryBaseA4",
+          "TopLeft": "X=534533.250 Y=-501222.219",
+          "BottomRight": "X=455511.125 Y=-578833.375"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}

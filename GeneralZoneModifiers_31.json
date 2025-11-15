@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "Torpedo",
+          "TopLeft": "X=-410911.062 Y=-652211.125",
+          "BottomRight": "X=-470177.781 Y=-721355.500"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "Cement Plant",
+          "TopLeft": "X=-396800.031 Y=9600.060",
+          "BottomRight": "X=-423611.062 Y=-20033.309"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}

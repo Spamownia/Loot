@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "Cement Plant",
+          "TopLeft": "X=-396800.031 Y=9600.060",
+          "BottomRight": "X=-423611.062 Y=-20033.309"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "MilitaryBaseA4",
+          "TopLeft": "X=534533.250 Y=-501222.219",
+          "BottomRight": "X=455511.125 Y=-578833.375"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}

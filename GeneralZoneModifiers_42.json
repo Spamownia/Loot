@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "Car Track",
+          "TopLeft": "X=290411.125 Y=-734055.500",
+          "BottomRight": "X=241022.234 Y=-773566.625"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "AirportB2",
+          "TopLeft": "X=-195011.109 Y=6777.690",
+          "BottomRight": "X=-343177.750 Y=-60955.617"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}
