@@ -7,7 +7,6 @@ import ftplib
 import json
 import requests
 from flask import Flask, jsonify
-from datetime import datetime
 
 # ---------------- CONFIG ----------------
 FTP_HOST = "195.179.226.218"
@@ -16,12 +15,8 @@ FTP_USER = "gpftp37275281717442833"
 FTP_PASS = "LXNdGShY"
 REMOTE_DIR = "/SCUM/Saved/Config/WindowsServer/Loot"
 
-VARIANTS = [
-    "GeneralZoneModifiers_1.json",
-    "GeneralZoneModifiers_2.json",
-    "GeneralZoneModifiers_3.json",
-    "GeneralZoneModifiers_4.json"
-]
+# 91 wariantów
+VARIANTS = [f"GeneralZoneModifiers_{i}.json" for i in range(1, 92)]
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1439377206999646208/0WUe3Vl_75zTQtzBCSvC9uDXJdylvEt9VKB0Bes6NviupWMqzcZElGXiMsbg2N6rL5iU"
 
@@ -83,12 +78,10 @@ def send_discord_notification(chosen_file: str):
     except Exception as e:
         content = f"🎲 **Wariant loot-u wybrany (błąd odczytu JSON):** {chosen_file} ({e})"
 
-    # Dodanie Discord Timestamp
     timestamp = int(time.time())
     content += f"\n⏱ Last zone draw: <t:{timestamp}:R>"
 
     try:
-        print("[Discord] Sending message:", content)
         r = requests.post(DISCORD_WEBHOOK, json={"content": content}, timeout=15)
         print(f"[Discord] Response: {r.status_code} {r.text}")
         if r.status_code in (200, 204):
@@ -142,6 +135,11 @@ def background_worker():
 def start_background_thread():
     global _worker_thread
     if _worker_thread is None or not _worker_thread.is_alive():
+        # start tylko jeśli wszystkie pliki są dostępne
+        available = all(os.path.isfile(f) for f in VARIANTS)
+        if not available:
+            print("[Worker] Not all variant files exist. Background worker will not start.")
+            return
         _worker_stop.clear()
         _worker_thread = threading.Thread(target=background_worker, daemon=True)
         _worker_thread.start()
@@ -182,10 +180,9 @@ def stop_background_thread():
         _worker_thread.join(timeout=5)
 
 
-# --- Start background thread immediately ---
-start_background_thread()
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     print(f"[Main] Starting Flask on 0.0.0.0:{port}")
+    # start workera tylko w tym bloku
+    start_background_thread()
     app.run(host="0.0.0.0", port=port)
