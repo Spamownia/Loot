@@ -33,7 +33,7 @@ app = Flask(__name__)
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
-_last_run_timestamp = 0  # nowy zmienna do śledzenia czasu ostatniego losowania
+_last_run_timestamp = 0
 _lock = threading.Lock()
 
 
@@ -105,6 +105,7 @@ def run_cycle():
                 chosen = choose_variant()
                 attempts += 1
         _last_chosen = chosen
+        _last_run_timestamp = time.time()  # aktualizacja czasu ostatniego losowania
 
     if not os.path.isfile(chosen):
         print(f"[Cycle] ERROR: local variant file not found: {chosen}")
@@ -114,7 +115,6 @@ def run_cycle():
     ok = upload_to_ftp(chosen)
     if ok:
         send_discord_notification(chosen)
-        _last_run_timestamp = time.time()  # aktualizacja czasu ostatniego losowania
         print(f"[Cycle] Completed successfully for variant: {chosen}")
         return {"ok": True, "file": chosen}
     else:
@@ -136,6 +136,20 @@ def background_worker():
     print("[Worker] Background worker stopped.")
 
 
+def clock_worker():
+    """Wypisuje w konsoli czas od ostatniego losowania co sekundę."""
+    while not _worker_stop.is_set():
+        if _last_run_timestamp == 0:
+            print("[Clock] Nie wykonano jeszcze losowania", end="\r")
+        else:
+            elapsed = int(time.time() - _last_run_timestamp)
+            hours = elapsed // 3600
+            minutes = (elapsed % 3600) // 60
+            seconds = elapsed % 60
+            print(f"[Clock] Czas od ostatniego losowania: {hours:02d}:{minutes:02d}:{seconds:02d}", end="\r")
+        time.sleep(1)
+
+
 def start_background_thread():
     global _worker_thread
     if _worker_thread is None or not _worker_thread.is_alive():
@@ -143,6 +157,12 @@ def start_background_thread():
         _worker_thread = threading.Thread(target=background_worker, daemon=True)
         _worker_thread.start()
         print("[Main] Background worker thread started.")
+
+
+def start_clock_thread():
+    t = threading.Thread(target=clock_worker, daemon=True)
+    t.start()
+    print("[Main] Clock thread started.")
 
 
 # --- Flask routes ---
@@ -173,28 +193,15 @@ def status():
     }), 200
 
 
-@app.route("/time-since-last", methods=["GET"])
-def time_since_last():
-    """Zwraca czas w formacie hh:mm:ss od ostatniego losowania"""
-    if _last_run_timestamp == 0:
-        return jsonify({"time_since_last": None, "message": "Nie wykonano jeszcze losowania"}), 200
-    elapsed = int(time.time() - _last_run_timestamp)
-    hours = elapsed // 3600
-    minutes = (elapsed % 3600) // 60
-    seconds = elapsed % 60
-    return jsonify({
-        "time_since_last": f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-    }), 200
-
-
 def stop_background_thread():
     _worker_stop.set()
     if _worker_thread is not None:
         _worker_thread.join(timeout=5)
 
 
-# --- Start background thread immediately ---
+# --- Start background threads ---
 start_background_thread()
+start_clock_thread()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
