@@ -128,7 +128,6 @@ def background_worker():
     print("[Worker] Background worker stopped.")
 
 
-@app.before_first_request
 def start_background_thread():
     global _worker_thread
     if _worker_thread is None or not _worker_thread.is_alive():
@@ -138,6 +137,7 @@ def start_background_thread():
         print("[Main] Background worker thread started.")
 
 
+# --- Flask routes ---
 @app.route("/", methods=["GET"])
 def index():
     return "Loot automation: running", 200
@@ -170,6 +170,9 @@ def stop_background_thread():
     if _worker_thread is not None:
         _worker_thread.join(timeout=5)
 
+
+# --- Start background thread immediately ---
+start_background_thread()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
