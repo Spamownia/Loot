@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# app.py -- single-file web service + background loop (4h) for uploading loot variants to FTP and notifying Discord
+# app.py -- single-file web service + background loop (4h) for uploading loot variants to FTP and notifying Discord + keep-alive
 
 import os
 import threading
@@ -25,15 +25,15 @@ VARIANTS = [
 ]
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1438609916238762054/FYjetBfGOUQgK4i9VIGhXVUjTbO_KxY1NYHcUsHv6Cpqcrj0hEaQllaqysQYVlydGDjl"
-
-INTERVAL_SECONDS = 4 * 3600  # 4 godziny
+INTERVAL_SECONDS = 4 * 3600  # 4 hours
 
 TMP_REMOTE_NAME = "._tmp_upload.json"
 TARGET_REMOTE_NAME = "GeneralZoneModifiers.json"
+
+KEEP_ALIVE_INTERVAL = 15 * 60  # 15 minut dla pingowania samego siebie
 # ----------------------------------------
 
 app = Flask(__name__)
-
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
@@ -52,7 +52,6 @@ def upload_to_ftp(local_file: str) -> bool:
             ftp.login(FTP_USER, FTP_PASS)
             ftp.cwd(REMOTE_DIR)
             with open(local_file, "rb") as f:
-                print(f"[FTP] Uploading temp file {TMP_REMOTE_NAME} ...")
                 ftp.storbinary(f"STOR {TMP_REMOTE_NAME}", f)
             try:
                 ftp.delete(TARGET_REMOTE_NAME)
@@ -99,7 +98,7 @@ def run_cycle():
 
     if not os.path.isfile(chosen):
         print(f"[Cycle] ERROR: local variant file not found: {chosen}")
-        return {"ok": False, "reason": "missing_variant", "file": chosen}
+        return {"ok": False, "file": chosen}
 
     print(f"[Cycle] Selected variant: {chosen}")
     ok = upload_to_ftp(chosen)
@@ -127,6 +126,21 @@ def background_worker():
     print("[Worker] Background worker stopped.")
 
 
+def keep_alive_worker():
+    """Ping same service to keep Render from idling."""
+    while not _worker_stop.is_set():
+        try:
+            url = os.environ.get("RENDER_EXTERNAL_URL") or f"http://localhost:{os.environ.get('PORT', '10000')}"
+            requests.get(url, timeout=10)
+            print(f"[KeepAlive] Pinged self at {url}")
+        except Exception as e:
+            print("[KeepAlive] Ping failed:", e)
+        slept = 0
+        while slept < KEEP_ALIVE_INTERVAL and not _worker_stop.is_set():
+            time.sleep(1)
+            slept += 1
+
+
 @app.route("/", methods=["GET"])
 def index():
     return "Loot automation: running", 200
@@ -134,15 +148,7 @@ def index():
 
 @app.route("/run-now", methods=["POST", "GET"])
 def run_now():
-    def _runner():
-        try:
-            print("[RunNow] Manual trigger started.")
-            run_cycle()
-            print("[RunNow] Manual trigger finished.")
-        except Exception as e:
-            print("[RunNow] Exception:", e)
-
-    threading.Thread(target=_runner, daemon=True).start()
+    threading.Thread(target=run_cycle, daemon=True).start()
     return jsonify({"ok": True, "message": "Cycle started in background"}), 202
 
 
@@ -155,24 +161,24 @@ def status():
     }), 200
 
 
-def start_background_thread():
+def start_threads():
     global _worker_thread
     if _worker_thread is None or not _worker_thread.is_alive():
         _worker_stop.clear()
         _worker_thread = threading.Thread(target=background_worker, daemon=True)
         _worker_thread.start()
-        print("[Main] Background worker thread started.")
+        threading.Thread(target=keep_alive_worker, daemon=True).start()
+        print("[Main] Background worker and keep-alive threads started.")
 
 
-def stop_background_thread():
+def stop_threads():
     _worker_stop.set()
     if _worker_thread is not None:
         _worker_thread.join(timeout=5)
 
 
 if __name__ == "__main__":
-    start_background_thread()
+    start_threads()
     port = int(os.environ.get("PORT", 10000))
     print(f"[Main] Starting Flask on 0.0.0.0:{port}")
-    # Gunicorn / Render expects a bound port, Flask here is just keep-alive
     app.run(host="0.0.0.0", port=port)
