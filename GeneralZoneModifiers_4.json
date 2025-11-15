@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "Torpedo",
+          "TopLeft": "X=-391155.562 Y=-638100.000",
+          "BottomRight": "X=-492755.562 Y=-736877.750"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 100,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 100,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "Tor",
+          "TopLeft": "X=290411.125 Y=-734055.500",
+          "BottomRight": "X=241022.234 Y=-773566.625"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 100,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 100,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}

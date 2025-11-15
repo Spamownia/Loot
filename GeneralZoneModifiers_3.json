@@ -1,0 +1,30 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "Zajezdnia",
+          "TopLeft": "X=-210533.312 Y=-708655.562",
+          "BottomRight": "X=-409500.031 Y=-808844.438"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 100,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 100,
+      "ExamineSpawnerQuantityMultiplier": 2
+    },
+    {
+      "Zones": [
+        {
+          "Name": "Tor",
+          "TopLeft": "X=290411.125 Y=-734055.500",
+          "BottomRight": "X=241022.234 Y=-773566.625"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 100,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 100,
+      "ExamineSpawnerQuantityMultiplier": 2
+    }
+  ]
+}
