@@ -11,14 +11,12 @@ import requests
 from flask import Flask, jsonify
 
 # ---------------- CONFIG ----------------
-# FTP
 FTP_HOST = "195.179.226.218"
 FTP_PORT = 56421
 FTP_USER = "gpftp37275281717442833"
 FTP_PASS = "LXNdGShY"
 REMOTE_DIR = "/SCUM/Saved/Config/WindowsServer/Loot"
 
-# Local variant files (must be present in the same directory)
 VARIANTS = [
     "GeneralZoneModifiers_1.json",
     "GeneralZoneModifiers_2.json",
@@ -26,20 +24,16 @@ VARIANTS = [
     "GeneralZoneModifiers_4.json"
 ]
 
-# Discord webhook
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1438609916238762054/FYjetBfGOUQgK4i9VIGhXVUjTbO_KxY1NYHcUsHv6Cpqcrj0hEaQllaqysQYVlydGDjl"
 
-# Interval (seconds)
-INTERVAL_SECONDS = 4 * 3600  # 4 hours
+INTERVAL_SECONDS = 4 * 3600  # 4 godziny
 
-# Safe temporary upload filename on FTP
 TMP_REMOTE_NAME = "._tmp_upload.json"
 TARGET_REMOTE_NAME = "GeneralZoneModifiers.json"
 # ----------------------------------------
 
 app = Flask(__name__)
 
-# Thread control
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
@@ -47,37 +41,23 @@ _lock = threading.Lock()
 
 
 def choose_variant():
-    """Randomly choose a variant file from VARIANTS."""
     return random.choice(VARIANTS)
 
 
 def upload_to_ftp(local_file: str) -> bool:
-    """Upload a local file to the FTP remote path, atomically (upload -> rename)."""
     try:
         print(f"[FTP] Connecting to {FTP_HOST}:{FTP_PORT} ...")
         with ftplib.FTP() as ftp:
             ftp.connect(FTP_HOST, FTP_PORT, timeout=20)
             ftp.login(FTP_USER, FTP_PASS)
-            # navigate to remote dir (create? assume exists)
-            try:
-                ftp.cwd(REMOTE_DIR)
-            except Exception as e:
-                print(f"[FTP] Could not cwd to {REMOTE_DIR}: {e}")
-                # try to create path? For safety, fail
-                return False
-
-            # upload as tmp file first
+            ftp.cwd(REMOTE_DIR)
             with open(local_file, "rb") as f:
                 print(f"[FTP] Uploading temp file {TMP_REMOTE_NAME} ...")
                 ftp.storbinary(f"STOR {TMP_REMOTE_NAME}", f)
-
-            # remove existing and rename
             try:
                 ftp.delete(TARGET_REMOTE_NAME)
             except Exception:
-                # ignore if doesn't exist
                 pass
-
             ftp.rename(TMP_REMOTE_NAME, TARGET_REMOTE_NAME)
             print("[FTP] Upload and rename successful.")
         return True
@@ -87,7 +67,6 @@ def upload_to_ftp(local_file: str) -> bool:
 
 
 def send_discord_notification(chosen_file: str):
-    """Read Zones from chosen file and post a message to Discord webhook."""
     try:
         with open(chosen_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -108,17 +87,14 @@ def send_discord_notification(chosen_file: str):
 
 
 def run_cycle():
-    """Run a single cycle: choose variant, upload, notify. Safe to call repeatedly."""
     global _last_chosen
     with _lock:
         chosen = choose_variant()
-        # prevent immediate same-file twice in a row (small improvement)
         if _last_chosen is not None and len(VARIANTS) > 1:
             attempts = 0
             while chosen == _last_chosen and attempts < 5:
                 chosen = choose_variant()
                 attempts += 1
-
         _last_chosen = chosen
 
     if not os.path.isfile(chosen):
@@ -137,16 +113,13 @@ def run_cycle():
 
 
 def background_worker():
-    """Background loop executed in a dedicated thread. Runs until _worker_stop is set."""
     print("[Worker] Background worker started. First run will execute immediately.")
     while not _worker_stop.is_set():
         try:
-            result = run_cycle()
-            # result logged already; you can extend to write to file
+            run_cycle()
         except Exception as e:
             print("[Worker] Exception in run_cycle:", e)
 
-        # wait INTERVAL_SECONDS but wake early if stop requested
         slept = 0
         while slept < INTERVAL_SECONDS and not _worker_stop.is_set():
             time.sleep(1)
@@ -161,7 +134,6 @@ def index():
 
 @app.route("/run-now", methods=["POST", "GET"])
 def run_now():
-    """Trigger immediate run_cycle in background and return immediately."""
     def _runner():
         try:
             print("[RunNow] Manual trigger started.")
@@ -199,9 +171,8 @@ def stop_background_thread():
 
 
 if __name__ == "__main__":
-    # Start background worker and Flask (port from env or 10000)
     start_background_thread()
     port = int(os.environ.get("PORT", 10000))
     print(f"[Main] Starting Flask on 0.0.0.0:{port}")
-    # Flask will serve and keep process alive so Render sees a bound port
+    # Gunicorn / Render expects a bound port, Flask here is just keep-alive
     app.run(host="0.0.0.0", port=port)
