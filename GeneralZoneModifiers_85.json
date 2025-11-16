@@ -3,6 +3,34 @@
     {
       "Zones": [
         {
+          "Name": "Cement Plant",
+          "TopLeft": "X=-396800.031 Y=9600.060",
+          "BottomRight": "X=-423611.062 Y=-20033.309"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2,
+      "DamageEnabled": true,
+      "GodMode": false,
+      "AllowVehicles": true,
+      "AllowBaseBuilding": true,
+      "AllowLockpicking": true,
+      "AllowDamageToBuildings": true,
+      "PVPEnabled": true,
+      "PVEOnly": false,
+      "AnimalSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
+      "LootSpawnMultiplier": 1,
+      "StaminaMultiplier": 1,
+      "HealingRateMultiplier": 1,
+      "RadiationEnabled": false,
+      "TemperatureMultiplier": 1
+    },
+    {
+      "Zones": [
+        {
           "Name": "AirportB2",
           "TopLeft": "X=-195011.109 Y=6777.690",
           "BottomRight": "X=-343177.750 Y=-60955.617"
@@ -21,35 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
-      "LootSpawnMultiplier": 1,
-      "StaminaMultiplier": 1,
-      "HealingRateMultiplier": 1,
-      "RadiationEnabled": false,
-      "TemperatureMultiplier": 1
-    },
-    {
-      "Zones": [
-        {
-          "Name": "MilitaryBaseA4",
-          "TopLeft": "X=534533.250 Y=-501222.219",
-          "BottomRight": "X=455511.125 Y=-578833.375"
-        }
-      ],
-      "SpawnerProbabilityMultiplier": 1,
-      "SpawnerQuantityMultiplier": 2,
-      "ExamineSpawnerProbabilityMultiplier": 1,
-      "ExamineSpawnerQuantityMultiplier": 2,
-      "DamageEnabled": true,
-      "GodMode": false,
-      "AllowVehicles": true,
-      "AllowBaseBuilding": true,
-      "AllowLockpicking": true,
-      "AllowDamageToBuildings": true,
-      "PVPEnabled": true,
-      "PVEOnly": false,
-      "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

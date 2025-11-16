@@ -21,7 +21,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,
@@ -31,9 +31,9 @@
     {
       "Zones": [
         {
-          "Name": "Cement Plant",
-          "TopLeft": "X=-396800.031 Y=9600.060",
-          "BottomRight": "X=-423611.062 Y=-20033.309"
+          "Name": "Mine",
+          "TopLeft": "X=-439167.156 Y=445721.000",
+          "BottomRight": "X=-477233.344 Y=407533.344"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -49,7 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

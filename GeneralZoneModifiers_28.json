@@ -21,7 +21,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,
@@ -31,9 +31,9 @@
     {
       "Zones": [
         {
-          "Name": "BrickYard",
-          "TopLeft": "X=-763688.875 Y=-265566.688",
-          "BottomRight": "X=-801788.875 Y=-296611.125"
+          "Name": "Car Track",
+          "TopLeft": "X=290411.125 Y=-734055.500",
+          "BottomRight": "X=241022.234 Y=-773566.625"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -49,7 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

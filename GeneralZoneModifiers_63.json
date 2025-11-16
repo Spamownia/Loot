@@ -21,7 +21,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,
@@ -31,9 +31,9 @@
     {
       "Zones": [
         {
-          "Name": "MilitaryBaseA4",
-          "TopLeft": "X=534533.250 Y=-501222.219",
-          "BottomRight": "X=455511.125 Y=-578833.375"
+          "Name": "Cement Plant",
+          "TopLeft": "X=-396800.031 Y=9600.060",
+          "BottomRight": "X=-423611.062 Y=-20033.309"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -49,7 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

@@ -3,6 +3,34 @@
     {
       "Zones": [
         {
+          "Name": "Cement Plant",
+          "TopLeft": "X=-396800.031 Y=9600.060",
+          "BottomRight": "X=-423611.062 Y=-20033.309"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2,
+      "DamageEnabled": true,
+      "GodMode": false,
+      "AllowVehicles": true,
+      "AllowBaseBuilding": true,
+      "AllowLockpicking": true,
+      "AllowDamageToBuildings": true,
+      "PVPEnabled": true,
+      "PVEOnly": false,
+      "AnimalSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
+      "LootSpawnMultiplier": 1,
+      "StaminaMultiplier": 1,
+      "HealingRateMultiplier": 1,
+      "RadiationEnabled": false,
+      "TemperatureMultiplier": 1
+    },
+    {
+      "Zones": [
+        {
           "Name": "Gravel Pit",
           "TopLeft": "X=156355.609 Y=-262744.438",
           "BottomRight": "X=116844.375 Y=-371399.906"
@@ -21,35 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
-      "LootSpawnMultiplier": 1,
-      "StaminaMultiplier": 1,
-      "HealingRateMultiplier": 1,
-      "RadiationEnabled": false,
-      "TemperatureMultiplier": 1
-    },
-    {
-      "Zones": [
-        {
-          "Name": "Sambor",
-          "TopLeft": "X=382133.344 Y=417411.125",
-          "BottomRight": "X=255133.375 Y=289000.000"
-        }
-      ],
-      "SpawnerProbabilityMultiplier": 1,
-      "SpawnerQuantityMultiplier": 2,
-      "ExamineSpawnerProbabilityMultiplier": 1,
-      "ExamineSpawnerQuantityMultiplier": 2,
-      "DamageEnabled": true,
-      "GodMode": false,
-      "AllowVehicles": true,
-      "AllowBaseBuilding": true,
-      "AllowLockpicking": true,
-      "AllowDamageToBuildings": true,
-      "PVPEnabled": true,
-      "PVEOnly": false,
-      "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

@@ -3,9 +3,9 @@
     {
       "Zones": [
         {
-          "Name": "Car Track",
-          "TopLeft": "X=290411.125 Y=-734055.500",
-          "BottomRight": "X=241022.234 Y=-773566.625"
+          "Name": "Torpedo",
+          "TopLeft": "X=-410911.062 Y=-652211.125",
+          "BottomRight": "X=-470177.781 Y=-721355.500"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -21,7 +21,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,
@@ -31,9 +31,9 @@
     {
       "Zones": [
         {
-          "Name": "ScrapYard",
-          "TopLeft": "X=-849766.688 Y=-155500.000",
-          "BottomRight": "X=-887866.625 Y=-213355.562"
+          "Name": "AirportD4",
+          "TopLeft": "X=542462.750 Y=617592.875",
+          "BottomRight": "X=421644.469 Y=520422.219"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -49,7 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

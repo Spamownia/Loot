@@ -3,9 +3,9 @@
     {
       "Zones": [
         {
-          "Name": "BrickYard",
-          "TopLeft": "X=-763688.875 Y=-265566.688",
-          "BottomRight": "X=-801788.875 Y=-296611.125"
+          "Name": "ScrapYard",
+          "TopLeft": "X=-849766.688 Y=-155500.000",
+          "BottomRight": "X=-887866.625 Y=-213355.562"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -21,7 +21,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,
@@ -31,9 +31,9 @@
     {
       "Zones": [
         {
-          "Name": "Gravel Pit",
-          "TopLeft": "X=156355.609 Y=-262744.438",
-          "BottomRight": "X=116844.375 Y=-371399.906"
+          "Name": "AirportA4",
+          "TopLeft": "X=393413.906 Y=-504038.281",
+          "BottomRight": "X=335555.906 Y=-542154.312"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -49,7 +49,7 @@
       "PVPEnabled": true,
       "PVEOnly": false,
       "AnimalSpawnMultiplier": 1,
-      "PuppetSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
       "LootSpawnMultiplier": 1,
       "StaminaMultiplier": 1,
       "HealingRateMultiplier": 1,

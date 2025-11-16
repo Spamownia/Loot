@@ -3,9 +3,9 @@
     {
       "Zones": [
         {
-          "Name": "AirportZ0",
-          "TopLeft": "X=-735466.688 Y=-631044.438",
-          "BottomRight": "X=-774977.812 Y=-710066.688"
+          "Name": "Gravel Pit",
+          "TopLeft": "X=156355.609 Y=-262744.438",
+          "BottomRight": "X=116844.375 Y=-371399.906"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
@@ -31,9 +31,9 @@
     {
       "Zones": [
         {
-          "Name": "Cement Plant",
-          "TopLeft": "X=-396800.031 Y=9600.060",
-          "BottomRight": "X=-423611.062 Y=-20033.309"
+          "Name": "AirportD4",
+          "TopLeft": "X=542462.750 Y=617592.875",
+          "BottomRight": "X=421644.469 Y=520422.219"
         }
       ],
       "SpawnerProbabilityMultiplier": 1,
