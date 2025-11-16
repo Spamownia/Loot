@@ -11,7 +11,22 @@
       "SpawnerProbabilityMultiplier": 1,
       "SpawnerQuantityMultiplier": 2,
       "ExamineSpawnerProbabilityMultiplier": 1,
-      "ExamineSpawnerQuantityMultiplier": 2
+      "ExamineSpawnerQuantityMultiplier": 2,
+      "DamageEnabled": true,
+      "GodMode": false,
+      "AllowVehicles": true,
+      "AllowBaseBuilding": true,
+      "AllowLockpicking": true,
+      "AllowDamageToBuildings": true,
+      "PVPEnabled": true,
+      "PVEOnly": false,
+      "AnimalSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1,
+      "LootSpawnMultiplier": 1,
+      "StaminaMultiplier": 1,
+      "HealingRateMultiplier": 1,
+      "RadiationEnabled": false,
+      "TemperatureMultiplier": 1
     },
     {
       "Zones": [
@@ -24,7 +39,22 @@
       "SpawnerProbabilityMultiplier": 1,
       "SpawnerQuantityMultiplier": 2,
       "ExamineSpawnerProbabilityMultiplier": 1,
-      "ExamineSpawnerQuantityMultiplier": 2
+      "ExamineSpawnerQuantityMultiplier": 2,
+      "DamageEnabled": true,
+      "GodMode": false,
+      "AllowVehicles": true,
+      "AllowBaseBuilding": true,
+      "AllowLockpicking": true,
+      "AllowDamageToBuildings": true,
+      "PVPEnabled": true,
+      "PVEOnly": false,
+      "AnimalSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1,
+      "LootSpawnMultiplier": 1,
+      "StaminaMultiplier": 1,
+      "HealingRateMultiplier": 1,
+      "RadiationEnabled": false,
+      "TemperatureMultiplier": 1
     }
   ]
 }
