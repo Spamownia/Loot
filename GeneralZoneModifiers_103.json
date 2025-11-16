@@ -1,0 +1,60 @@
+{
+  "Modifiers": [
+    {
+      "Zones": [
+        {
+          "Name": "AirportD4",
+          "TopLeft": "X=542462.750 Y=617592.875",
+          "BottomRight": "X=421644.469 Y=520422.219"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2,
+      "DamageEnabled": true,
+      "GodMode": false,
+      "AllowVehicles": true,
+      "AllowBaseBuilding": true,
+      "AllowLockpicking": true,
+      "AllowDamageToBuildings": true,
+      "PVPEnabled": true,
+      "PVEOnly": false,
+      "AnimalSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
+      "LootSpawnMultiplier": 1,
+      "StaminaMultiplier": 1,
+      "HealingRateMultiplier": 1,
+      "RadiationEnabled": false,
+      "TemperatureMultiplier": 1
+    },
+    {
+      "Zones": [
+        {
+          "Name": "MilitaryBaseA4",
+          "TopLeft": "X=534533.250 Y=-501222.219",
+          "BottomRight": "X=455511.125 Y=-578833.375"
+        }
+      ],
+      "SpawnerProbabilityMultiplier": 1,
+      "SpawnerQuantityMultiplier": 2,
+      "ExamineSpawnerProbabilityMultiplier": 1,
+      "ExamineSpawnerQuantityMultiplier": 2,
+      "DamageEnabled": true,
+      "GodMode": false,
+      "AllowVehicles": true,
+      "AllowBaseBuilding": true,
+      "AllowLockpicking": true,
+      "AllowDamageToBuildings": true,
+      "PVPEnabled": true,
+      "PVEOnly": false,
+      "AnimalSpawnMultiplier": 1,
+      "PuppetSpawnMultiplier": 1.5,
+      "LootSpawnMultiplier": 1,
+      "StaminaMultiplier": 1,
+      "HealingRateMultiplier": 1,
+      "RadiationEnabled": false,
+      "TemperatureMultiplier": 1
+    }
+  ]
+}
