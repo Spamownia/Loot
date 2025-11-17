@@ -20,7 +20,7 @@ VARIANTS = [f"GeneralZoneModifiers_{i}.json" for i in range(1, 92)]
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1439377206999646208/0WUe3Vl_75zTQtzBCSvC9uDXJdylvEt9VKB0Bes6NviupWMqzcZElGXiMsbg2N6rL5iU"
 
-INTERVAL_SECONDS = 4 * 3600
+INTERVAL_SECONDS = 6 * 3600
 TMP_REMOTE_NAME = "._tmp_upload.json"
 TARGET_REMOTE_NAME = "GeneralZoneModifiers.json"
 # ----------------------------------------
