@@ -2,3 +2,4 @@ flask
 gunicorn
 requests
 discord.py>=2.5.1
+pytz
