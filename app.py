@@ -9,6 +9,7 @@ import requests
 from flask import Flask, jsonify
 from datetime import datetime
 import pytz
+import traceback
 
 # ---------------- CONFIG ----------------
 FTP_HOST = "195.179.226.218"
@@ -32,9 +33,10 @@ app = Flask(__name__)
 _worker_thread = None
 _worker_stop = threading.Event()
 _last_chosen = None
-_last_run_date = None
 _lock = threading.Lock()
 
+# Śledzimy ostatnie uruchomienia dla każdego harmonogramu (key = (hour, minute))
+_last_runs = {}  # {(hour, minute): datetime_of_last_run}
 
 def choose_variant():
     return random.choice(VARIANTS)
@@ -50,15 +52,18 @@ def upload_to_ftp(local_file: str) -> bool:
             with open(local_file, "rb") as f:
                 print(f"[FTP] Uploading temp file {TMP_REMOTE_NAME} ...")
                 ftp.storbinary(f"STOR {TMP_REMOTE_NAME}", f)
+            # usuń docelowy jeśli istnieje (ignorujemy błąd jeśli nie istnieje)
             try:
                 ftp.delete(TARGET_REMOTE_NAME)
             except Exception:
                 pass
-            ftp.rename(TTMP_REMOTE_NAME, TARGET_REMOTE_NAME)
+            # poprawiona nazwa zmiennej TMP_REMOTE_NAME
+            ftp.rename(TMP_REMOTE_NAME, TARGET_REMOTE_NAME)
             print("[FTP] Upload and rename successful.")
         return True
     except Exception as e:
         print("[FTP] Error during FTP upload:", e)
+        traceback.print_exc()
         return False
 
 
@@ -91,69 +96,83 @@ def send_discord_notification(chosen_file: str):
         print(f"[Discord] Response: {r.status_code} {r.text}")
     except Exception as e:
         print("[Discord] Error while sending webhook:", e)
+        traceback.print_exc()
 
 
 def run_cycle():
     global _last_chosen
-    with _lock:
-        chosen = choose_variant()
-        if _last_chosen is not None and len(VARIANTS) > 1:
-            attempts = 0
-            while chosen == _last_chosen and attempts < 5:
-                chosen = choose_variant()
-                attempts += 1
-        _last_chosen = chosen
+    try:
+        with _lock:
+            chosen = choose_variant()
+            # unikamy powtórki identycznego wariantu względem ostatniego, kilka prób
+            if _last_chosen is not None and len(VARIANTS) > 1:
+                attempts = 0
+                while chosen == _last_chosen and attempts < 5:
+                    chosen = choose_variant()
+                    attempts += 1
+            _last_chosen = chosen
 
-    if not os.path.isfile(chosen):
-        print(f"[Cycle] ERROR: local variant file not found: {chosen}")
-        return
+        if not os.path.isfile(chosen):
+            print(f"[Cycle] ERROR: local variant file not found: {chosen}")
+            return
 
-    print(f"[Cycle] Selected variant: {chosen}")
-    ok = upload_to_ftp(chosen)
-    if ok:
-        send_discord_notification(chosen)
-        print(f"[Cycle] Completed successfully for variant: {chosen}")
-    else:
-        print(f"[Cycle] Upload failed for variant: {chosen}")
+        print(f"[Cycle] Selected variant: {chosen}")
+        ok = upload_to_ftp(chosen)
+        if ok:
+            send_discord_notification(chosen)
+            print(f"[Cycle] Completed successfully for variant: {chosen}")
+        else:
+            print(f"[Cycle] Upload failed for variant: {chosen}")
+    except Exception as e:
+        print("[Cycle] Unexpected exception in run_cycle:", e)
+        traceback.print_exc()
 
 
 # ------------------- NEW SCHEDULING SYSTEM ---------------------
-
 def should_run_now():
-    """Sprawdza czy lokalny czas Polski = jeden z harmonogramów."""
-    global _last_run_date
-
+    """
+    Sprawdza czy lokalny czas (Europe/Warsaw) odpowiada któremuś z RUN_TIMES
+    i czy dla tego konkretnego (hour, minute) nie wykonaliśmy już cyklu w tej samej minucie.
+    Zwraca True jeżeli należy uruchomić cykl teraz.
+    """
     tz = pytz.timezone("Europe/Warsaw")
     now = datetime.now(tz)
     current_hm = (now.hour, now.minute)
 
-    # Jeśli nie jest to żadna wyznaczona godzina → nie uruchamiać
     if current_hm not in RUN_TIMES:
         return False
 
-    # Nie odpalać dwa razy w tej samej minucie
-    if _last_run_date == now.date():
-        if getattr(should_run_now, "last_minute", None) == now.minute:
-            return False
+    last_run_dt = _last_runs.get(current_hm)
+    # jeśli nie było uruchomienia dla tej pary (hour,minute), albo ostatnie uruchomienie
+    # nie było w tej samej minucie (np. inny dzień / inna minuta) -> można uruchomić
+    if last_run_dt is None or not (last_run_dt.date() == now.date() and last_run_dt.hour == now.hour and last_run_dt.minute == now.minute):
+        # zapisujemy czas uruchomienia, aby nie powtórzyć w tej samej minucie
+        _last_runs[current_hm] = now
+        return True
 
-    should_run_now.last_minute = now.minute
-    _last_run_date = now.date()
-    return True
+    # już uruchomione w tej minucie -> nie uruchamiać ponownie
+    return False
 
 
 def background_worker():
     print("[Worker] Scheduler worker started.")
-    while not _worker_stop.is_set():
-        try:
-            if should_run_now():
-                print("[Scheduler] Scheduled time hit — running cycle.")
-                run_cycle()
-        except Exception as e:
-            print("[Worker] Exception:", e)
+    try:
+        while not _worker_stop.is_set():
+            try:
+                if should_run_now():
+                    print("[Scheduler] Scheduled time hit — running cycle.")
+                    run_cycle()
+            except Exception as e:
+                print("[Worker] Exception in schedule check:", e)
+                traceback.print_exc()
 
-        time.sleep(15)  # sprawdzamy co 15 sekund
-
-    print("[Worker] Scheduler worker stopped.")
+            # sprawdzamy co 15 sekund (tolerancja wystarczająca przy sprawdzaniu minut)
+            time.sleep(15)
+    except Exception as e:
+        print("[Worker] Fatal exception in background_worker:", e)
+        traceback.print_exc()
+    finally:
+        print("[Worker] Scheduler worker stopped.")
 # ---------------------------------------------------------------
 
 
@@ -184,10 +203,13 @@ def run_now():
 
 @app.route("/status", methods=["GET"])
 def status():
+    # lista dostępnych wariantów (lokalnie)
+    available = [f for f in VARIANTS if os.path.isfile(f)]
     return jsonify({
         "service": "loot-automation",
         "run_times": RUN_TIMES,
-        "variants_available": [f for f in VARIANTS if os.path.isfile(f)]
+        "variants_available": available,
+        "last_runs": {f"{h:02d}:{m:02d}": (_last_runs.get((h, m)).isoformat() if _last_runs.get((h, m)) else None) for (h, m) in RUN_TIMES}
     }), 200
 
 
@@ -203,4 +225,5 @@ start_background_thread()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     print(f"[Main] Starting Flask on 0.0.0.0:{port}")
-    app.run(host="0.0.0.0", port=port)
+    # threaded=True aby Flask nie blokował wątków (bezpieczniej na Render)
+    app.run(host="0.0.0.0", port=port, threaded=True)
